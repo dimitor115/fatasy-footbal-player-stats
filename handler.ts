@@ -3,9 +3,10 @@ import {Handler} from 'aws-lambda'
 
 import {findPlayerStatistics} from './src/playerStatsUseCase'
 import {isPeriod, Period} from './src/models/Period'
-import { logger } from './src/logger'
 
 dotenv.config()
+import { logger } from './src/logger'
+
 export const stats: Handler<Event> = async (event: Event) => {
   try {
     logger.debug(`Input path params: [${JSON.stringify(event.pathParameters)}], query params: [${JSON.stringify(event.queryStringParameters)}]`)
