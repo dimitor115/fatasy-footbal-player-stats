@@ -3,10 +3,12 @@ import {Handler} from 'aws-lambda';
 
 import {findPlayerStatistics} from "./src/playerStatsUseCase";
 import {isPeriod, Period} from "./src/models/Period";
+import { logger } from './src/logger';
 
 dotenv.config()
 export const stats: Handler<Event> = async (event: Event) => {
     try {
+        logger.debug(`Input path params: [${JSON.stringify(event.pathParameters)}], query params: [${JSON.stringify(event.queryStringParameters)}]`)
         const period = getPeriod(event)
         const periodId = getPeriodId(event, period)
         const result = await findPlayerStatistics(period, periodId)
@@ -23,6 +25,7 @@ export const stats: Handler<Event> = async (event: Event) => {
         };
         return response
     } catch (e) {
+        logger.error(e)
         return {
             statusCode: 500,
             body: JSON.stringify(

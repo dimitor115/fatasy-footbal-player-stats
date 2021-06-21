@@ -1,12 +1,15 @@
 import {useDatabase} from "./database";
 import {PlayerStats} from "./models/PlayerStats";
 import {Period} from "./models/Period";
+import {logger} from "./logger"
 
 export async function findPlayerStatistics(period: Period, periodId?: number): Promise<PlayerStats[]> {
     return useDatabase(async connection => {
+        logger.info(`Finding player statistics for period [${period}] and periodId [${periodId}].`)
         const query = prepareQuery(period, periodId)
-        console.log(query)
+        logger.debug(query)
         const [result] = await connection.query<PlayerStats[]>(query)
+        logger.info(`Found [${result.length}] matching entries.`)
         return result
     })
 }

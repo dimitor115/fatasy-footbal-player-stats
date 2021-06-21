@@ -3,7 +3,6 @@ import * as mysql from 'mysql2/promise'
 export async function useDatabase<Result>(use: (connection: mysql.Connection) => Promise<Result>): Promise<Result> {
     let connection: mysql.Connection | null = null
     try {
-        console.log(process.env)
         connection = await mysql.createConnection({
             host: process.env.DB_HOST,
             port: +process.env.DB_PORT,
@@ -18,7 +17,6 @@ export async function useDatabase<Result>(use: (connection: mysql.Connection) =>
     } catch (e) {
         if(connection) {
             await connection.end()
-            console.log("Closing connection")
         }
         throw e
     }
