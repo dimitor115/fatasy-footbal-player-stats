@@ -17,8 +17,8 @@ export const stats: Handler<Event> = async (event: Event) => {
       statusCode: 200,
       body: JSON.stringify(
         {
-          message: result,
-          input: event,
+          period,
+          stats: result,
         },
         null,
         2
@@ -31,8 +31,7 @@ export const stats: Handler<Event> = async (event: Event) => {
       statusCode: 500,
       body: JSON.stringify(
         {
-          message: e.message,
-          input: event,
+          errorMessage: e.message,
         },
         null,
         2
