@@ -1,29 +1,20 @@
+import * as dotenv from 'dotenv'
 import {Handler} from 'aws-lambda';
+
 import {findPlayerStatistics} from "./src/playerStatsUseCase";
 import {isPeriod, Period} from "./src/models/Period";
 
-type Event = {
-    pathParameters: {
-        period: string
-    }
-    queryParameters: {
-        weekId?: number
-        monthId?: number
-    }
-}
-
+dotenv.config()
 export const stats: Handler<Event> = async (event: Event) => {
     try {
-        console.log(event)
         const period = getPeriod(event)
         const periodId = getPeriodId(event, period)
         const result = await findPlayerStatistics(period, periodId)
-        console.log(result)
         const response = {
             statusCode: 200,
             body: JSON.stringify(
                 {
-                    message: '',
+                    message: result,
                     input: event,
                 },
                 null,
@@ -47,6 +38,16 @@ export const stats: Handler<Event> = async (event: Event) => {
 
 }
 
+type Event = {
+    pathParameters: {
+        period: string
+    }
+    queryStringParameters: {
+        weekId?: number
+        monthId?: number
+    }
+}
+
 function getPeriod(event: Event): Period {
     const periodInput = event.pathParameters.period
     if (isPeriod(periodInput)) {
@@ -68,21 +69,21 @@ function getPeriodId(event: Event, period: Period): number | undefined {
 }
 
 function getMonthId(event: Event): number {
-    const maybeMonthId = event.queryParameters.weekId
+    const maybeMonthId = event.queryStringParameters.monthId
     if (maybeMonthId === undefined || maybeMonthId === null)
-        throw Error("maybeMonthId cannot be null")
+        throw Error("Parameter monthId cannot be null.")
     if (1 > maybeMonthId || maybeMonthId > 37)
-        throw Error("maybeMonthId cannot be null")
+        throw Error("Parameter monthId should be in range [1-37]")
     else
         return maybeMonthId
 }
 
 function getWeekId(event: Event): number {
-    const maybeWeekId = event.queryParameters.weekId
+    const maybeWeekId = event.queryStringParameters.weekId
     if (maybeWeekId === undefined || maybeWeekId === null)
-        throw Error("WeekId cannot be null")
+        throw Error("Parameter weekId cannot be null.")
     if (1 > maybeWeekId || maybeWeekId > 12)
-        throw Error("WeekId cannot be null")
+        throw Error("Parameter monthId should be in range [1-12]")
     else
         return maybeWeekId
 }
