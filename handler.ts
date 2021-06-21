@@ -1,19 +1,88 @@
-import { Handler } from 'aws-lambda';
-import {findPlayerStatistics} from "./src/PlayerStatsUseCase";
+import {Handler} from 'aws-lambda';
+import {findPlayerStatistics} from "./src/playerStatsUseCase";
+import {isPeriod, Period} from "./src/models/Period";
 
+type Event = {
+    pathParameters: {
+        period: string
+    }
+    queryParameters: {
+        weekId?: number
+        monthId?: number
+    }
+}
 
-export const stats: Handler = async (event: any) => {
-  const result = await findPlayerStatistics()
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(
-            {
-                message: result,
-                input: event,
-            },
-            null,
-            2
-        ),
-    };
-  return response
+export const stats: Handler<Event> = async (event: Event) => {
+    try {
+        console.log(event)
+        const period = getPeriod(event)
+        const periodId = getPeriodId(event, period)
+        const result = await findPlayerStatistics(period, periodId)
+        console.log(result)
+        const response = {
+            statusCode: 200,
+            body: JSON.stringify(
+                {
+                    message: '',
+                    input: event,
+                },
+                null,
+                2
+            ),
+        };
+        return response
+    } catch (e) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify(
+                {
+                    message: e.message,
+                    input: event,
+                },
+                null,
+                2
+            ),
+        };
+    }
+
+}
+
+function getPeriod(event: Event): Period {
+    const periodInput = event.pathParameters.period
+    if (isPeriod(periodInput)) {
+        return periodInput
+    } else {
+        throw Error(`Invalid period type: [${periodInput}]`)
+    }
+}
+
+function getPeriodId(event: Event, period: Period): number | undefined {
+    switch (period) {
+        case Period.WEEK:
+            return getWeekId(event)
+        case Period.MONTH:
+            return getMonthId(event)
+        default:
+            return undefined
+    }
+}
+
+function getMonthId(event: Event): number {
+    const maybeMonthId = event.queryParameters.weekId
+    if (maybeMonthId === undefined || maybeMonthId === null)
+        throw Error("maybeMonthId cannot be null")
+    if (1 > maybeMonthId || maybeMonthId > 37)
+        throw Error("maybeMonthId cannot be null")
+    else
+        return maybeMonthId
+}
+
+function getWeekId(event: Event): number {
+    const maybeWeekId = event.queryParameters.weekId
+    if (maybeWeekId === undefined || maybeWeekId === null)
+        throw Error("WeekId cannot be null")
+    if (1 > maybeWeekId || maybeWeekId > 12)
+        throw Error("WeekId cannot be null")
+    else
+        return maybeWeekId
 }

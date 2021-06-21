@@ -5,12 +5,19 @@ provider:
   runtime: nodejs12.x
 
 functions:
-  hello:
+  stats:
     handler: handler.stats
     events:
       - http:
-          path: /
+          path: /stats/{period}
           method: get
+          request:
+            parameters:
+              paths:
+                period: true
+              querystrings:
+                weekId: false
+                monthId: false
 
 plugins:
   - serverless-plugin-typescript
